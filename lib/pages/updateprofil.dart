@@ -120,11 +120,69 @@ class _uprofil_pageState extends State<uprofil_page> {
                 leading: Icon(Icons.image),
                 title: Text("Select from Gallery"),
               ),
+              ListTile(
+                onTap: () {
+                  Navigator.pop(context);
+                  deleteProfilePicture();
+                  setState(() {
+                    _imageFile =
+                        null; // Setel kembali variabel _imageFile menjadi null
+                  });
+                },
+                leading: Icon(Icons.delete),
+                title: Text("Remove Profile Picture"),
+              ),
             ],
           ),
         );
       },
     );
+  }
+
+  void deleteProfilePicture() async {
+    // Hapus gambar dari penyimpanan Firebase
+    String uid = _currentUser!.uid;
+    String fileName = '$uid.jpg';
+
+    Reference ref =
+        FirebaseStorage.instance.ref("profilePicture").child(fileName);
+    await ref.delete();
+
+    // Update database untuk menghapus URL gambar dari profil pengguna
+    updateUserData('profilePicture', '');
+  }
+
+  void showLargeImage(String? imageUrl) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          leading: IconButton(
+            icon: Image.asset('assets/icons/back.png'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Hero(
+            tag: 'profileImage',
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: imageUrl != null && imageUrl.isNotEmpty
+                  ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.contain,
+                    )
+                  : Icon(Icons.person, size: 100, color: Colors.white),
+            ),
+          ),
+        ),
+      );
+    }));
   }
 
   @override
@@ -183,14 +241,24 @@ class _uprofil_pageState extends State<uprofil_page> {
                                 backgroundColor: Colors.grey,
                                 backgroundImage:
                                     NetworkImage(userData['profilePicture']),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    showLargeImage(userData['profilePicture']);
+                                  },
+                                ),
                               ),
                             if (userData['profilePicture'] == null ||
                                 userData['profilePicture'] == "")
                               CircleAvatar(
                                 radius: 80,
                                 backgroundColor: Colors.grey,
-                                child: Icon(Icons.person,
-                                    size: 100, color: Colors.white),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    showLargeImage(userData['profilePicture']);
+                                  },
+                                  child: Icon(Icons.person,
+                                      size: 100, color: Colors.white),
+                                ),
                               ),
                             Positioned(
                               bottom: 10,

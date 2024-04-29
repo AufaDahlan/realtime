@@ -147,6 +147,56 @@ class _fillProfileState extends State<fillProfile> {
     }
   }
 
+  void showLargeImage() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          leading: IconButton(
+            icon: Image.asset('assets/icons/back.png'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+        body: Stack(
+          children: [
+            Container(
+              color: Colors.black, // Latar belakang hitam
+              alignment: Alignment.center,
+              child: Hero(
+                tag: 'profileImage',
+                child: imageFile != null
+                    ? Image.file(imageFile!)
+                    : Icon(Icons.person, size: 100, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      );
+    }));
+  }
+
+  void deleteProfilePicture() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String uid = user.uid;
+      String fileName = '$uid.jpg';
+
+      // Delete image from Firebase storage
+      Reference ref =
+          FirebaseStorage.instance.ref("profilePicture").child(fileName);
+      await ref.delete();
+
+      // Update user data in the database to remove the profile picture URL
+      DatabaseReference usersRef =
+          FirebaseDatabase.instance.reference().child('users');
+      usersRef.child(uid).update({'profilePicture': ''});
+    } else {
+      print("Error: User not found");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,21 +216,28 @@ class _fillProfileState extends State<fillProfile> {
                 children: [
                   Stack(
                     children: [
-                      CircleAvatar(
-                        radius: 80,
-                        backgroundColor: Colors.grey,
-                        backgroundImage:
-                            (imageFile != null) ? FileImage(imageFile!) : null,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            if (imageFile == null)
-                              Icon(
-                                Icons.person,
-                                size: 100,
-                                color: Colors.white,
-                              ),
-                          ],
+                      GestureDetector(
+                        onTap: showLargeImage,
+                        child: Hero(
+                          tag: 'profileImage',
+                          child: CircleAvatar(
+                            radius: 80,
+                            backgroundColor: Colors.grey,
+                            backgroundImage: (imageFile != null)
+                                ? FileImage(imageFile!)
+                                : null,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                if (imageFile == null)
+                                  Icon(
+                                    Icons.person,
+                                    size: 100,
+                                    color: Colors.white,
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                       Positioned(

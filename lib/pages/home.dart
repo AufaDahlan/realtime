@@ -216,7 +216,13 @@ class _Home_PageState extends State<Home_Page> {
           ListView.builder(
             itemCount: _otherUserNames.length,
             itemBuilder: (context, index) {
-              String roomKey = '${_currentUser.uid}_${_otherUserIds[index]}';
+              String roomKey;
+              if (_otherUserIds[index].compareTo(_currentUser.uid) < 0) {
+                roomKey = '${_otherUserIds[index]}_${_currentUser.uid}';
+              } else {
+                roomKey = '${_currentUser.uid}_${_otherUserIds[index]}';
+              }
+
               String lastMessage = _latestMessages.containsKey(roomKey) &&
                       _latestMessages[roomKey] is String
                   ? _latestMessages[roomKey]
@@ -225,6 +231,7 @@ class _Home_PageState extends State<Home_Page> {
               int? lastTimestamp = _latestTimestamps.containsKey(roomKey)
                   ? _latestTimestamps[roomKey]
                   : 0;
+
               String lastMessageTime = _formatTimestamp(lastTimestamp!);
               return GestureDetector(
                 onTap: () {
