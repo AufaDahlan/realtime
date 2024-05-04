@@ -27,7 +27,23 @@ class _Home_PageState extends State<Home_Page> {
   @override
   void initState() {
     super.initState();
+    // x = getDataBundle();
+
     _getCurrentUser();
+
+    // data dari fetch, database, dengan filter tertentu
+
+
+
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    // TODO: implement setState
+    super.setState(fn);
+    SnackBar(
+        content: Text(
+            'initstate jalan'));
   }
 
   void _getCurrentUser() {
@@ -63,6 +79,7 @@ class _Home_PageState extends State<Home_Page> {
       if (event.snapshot.value != null) {
         Map<dynamic, dynamic>? userData =
             event.snapshot.value as Map<dynamic, dynamic>?;
+
         if (userData != null && userData.containsKey('nama')) {
           String nama = userData['nama'] as String;
           String profilePicture = userData['profilePicture'] as String;
@@ -214,9 +231,10 @@ class _Home_PageState extends State<Home_Page> {
       body: Stack(
         children: [
           ListView.builder(
-            itemCount: _otherUserNames.length,
+            itemCount: _otherUserNames.length, // 4
             itemBuilder: (context, index) {
               String roomKey;
+
               if (_otherUserIds[index].compareTo(_currentUser.uid) < 0) {
                 roomKey = '${_otherUserIds[index]}_${_currentUser.uid}';
               } else {

@@ -115,7 +115,11 @@ class _ChatScreenState extends State<ChatScreen> {
                     map.forEach((key, value) {
                       messages.add(value);
                     });
+                    print("start");
+                    print(messages);
+                    print("end");
                   }
+
                   messages
                       .sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
                   return ListView.builder(
@@ -674,9 +678,12 @@ class _ChatScreenState extends State<ChatScreen> {
         final externalDir = await getExternalStorageDirectory();
         final savedDir = Directory('${externalDir!.path}/DisApp/Documents');
         bool hasExisted = await savedDir.exists();
+
         if (!hasExisted) {
           await savedDir.create(recursive: true);
         }
+
+        //
         await FlutterDownloader.enqueue(
           url: fileUrl,
           savedDir: savedDir.path,
@@ -684,6 +691,9 @@ class _ChatScreenState extends State<ChatScreen> {
           showNotification: true,
           openFileFromNotification: true,
         );
+
+        // setstate()
+
       }
     } catch (e) {
       print('Error downloading file: $e');
