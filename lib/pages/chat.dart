@@ -10,6 +10,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:fast_rsa/fast_rsa.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ChatScreen extends StatefulWidget {
   final String roomId;
@@ -20,6 +22,7 @@ class ChatScreen extends StatefulWidget {
     required this.roomId,
     required this.nama,
     this.profilePicture,
+    required this.targetUserID
   });
 
   @override
@@ -617,7 +620,22 @@ class _ChatScreenState extends State<ChatScreen> {
       };
 
       if (text.isNotEmpty) {
-        messageData['text'] = text;
+        // ENCRYPT WITH public_key TARGET USER
+
+        String? public_key;
+        await referenceDatabase.child('users').child(widget.targetUserID).child("public_key").once().then((DatabaseEvent event) {
+
+          // cek lagi disini
+          public_key = event.snapshot.value as String?;
+
+          print("=========== > pub key user target: ");
+          print(public_key);
+
+        });
+
+        String encrypted = await RSA.encryptPKCS1v15( text, public_key!);
+
+        messageData['text'] = encrypted;
       }
 
       if (imageUrl != null) {
