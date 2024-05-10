@@ -76,6 +76,7 @@ class _SearchPageState extends State<SearchPage> {
                                               nama: value['nama'],
                                               profilePicture:
                                                   value['profilePicture'],
+                                              targetUserID: value['uid'],
                                             );
                                           }),
                                         );
