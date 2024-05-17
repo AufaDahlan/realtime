@@ -135,7 +135,7 @@ class _signupState extends State<signup> {
   void setStorage() async {
 
     print("masuk sini");
-    // await storage.deleteAll();
+    await storage.deleteAll();
 
     String? value = await storage.read(key: "private_key");
 
@@ -220,6 +220,7 @@ class _signupState extends State<signup> {
             'uid': user.uid,
             'profilePicture': imageUrl,
             'public_key': public_key
+
           });
 
         }

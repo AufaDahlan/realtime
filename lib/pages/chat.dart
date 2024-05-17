@@ -130,6 +130,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     reverse: true,
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
+
+                      // proses cek apakah status download true ????
+
+
                       var message = messages[index];
                       bool isSentByCurrentUser = (message['sender'] ==
                           FirebaseAuth.instance.currentUser!.uid);
@@ -623,14 +627,31 @@ class _ChatScreenState extends State<ChatScreen> {
       if (text.isNotEmpty) {
         // ENCRYPT WITH public_key TARGET USER
 
+        print("===== current UID ========");
+        print(widget.targetUserID);
+        print("============================");
+
         String? public_key;
-        await referenceDatabase.child('users').child(widget.targetUserID).child("public_key").once().then((DatabaseEvent event) {
+        await referenceDatabase.child('users').child(widget.targetUserID).once().then((DatabaseEvent event) {
+
+          if (event.snapshot.value != null) {
+            Map<dynamic, dynamic>? pubkey = event.snapshot.value as Map<dynamic, dynamic>?;
+
+            if (pubkey != null && pubkey.containsKey('public_key')) {
+              String publickey = pubkey['public_key'] as String;
+
+              print("=====tampildata pubkey=====");
+              print(publickey);
+              print("======================");
+
+            }
+          }
 
           // cek lagi disini
-          public_key = event.snapshot.value as String?;
-
-          print("=========== > pub key user target: ");
-          print(public_key);
+          // public_key = event.snapshot.value as String?;
+          //
+          // print("=========== > pub key user target: ");
+          // print(public_key);
 
         });
 
