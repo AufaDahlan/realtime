@@ -158,7 +158,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    message['text'],
+                                    message['text'], // dekripsi dulu disini
                                     style: TextStyle(
                                         color: Colors.white, fontSize: 12),
                                   ),
@@ -632,19 +632,25 @@ class _ChatScreenState extends State<ChatScreen> {
         print("============================");
 
         String? public_key;
-        await referenceDatabase.child('users').child(widget.targetUserID).once().then((DatabaseEvent event) {
+
+        final DatabaseReference refToUsers = FirebaseDatabase.instance.ref().child('users');
+
+        await refToUsers.child(widget.targetUserID).once().then((DatabaseEvent event) {
+
+          print(event.snapshot.value);
 
           if (event.snapshot.value != null) {
             Map<dynamic, dynamic>? pubkey = event.snapshot.value as Map<dynamic, dynamic>?;
 
-            if (pubkey != null && pubkey.containsKey('public_key')) {
-              String publickey = pubkey['public_key'] as String;
 
-              print("=====tampildata pubkey=====");
-              print(publickey);
-              print("======================");
+            pubkey?.forEach((key, value) {
+              if(key == "public_key"){
+                print("=====tampildata pubkey=====");
+                public_key = value;
+                print(value);
+              }
+            });
 
-            }
           }
 
           // cek lagi disini
@@ -656,7 +662,6 @@ class _ChatScreenState extends State<ChatScreen> {
         });
 
         String encrypted = await RSA.encryptPKCS1v15( text, public_key!);
-
         messageData['text'] = encrypted;
       }
 
