@@ -261,6 +261,7 @@ class _Home_PageState extends State<Home_Page> {
                             _currentUser.uid, _otherUserIds[index]),
                         nama: _otherUserNames[index],
                         profilePicture: _otherUserProfilePictures[index],
+                        targetUserID: _otherUserIds[index],
                       );
                     }),
                   );

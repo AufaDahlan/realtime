@@ -47,6 +47,9 @@ dependencies:
   flutter_downloader: ^1.11.6
   permission_handler: ^11.3.1
   shared_preferences: ^2.2.3
+  fast_rsa: ^3.6.2
+  flutter_secure_storage: ^9.1.1
+  uuid: ^4.4.0
   
   
 
