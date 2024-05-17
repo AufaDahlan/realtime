@@ -17,6 +17,7 @@ class ChatScreen extends StatefulWidget {
   final String roomId;
   final String nama;
   final String? profilePicture;
+  final String targetUserID;
 
   ChatScreen({
     required this.roomId,
@@ -612,7 +613,7 @@ class _ChatScreenState extends State<ChatScreen> {
       String? imageName,
       String? fileUrl,
       String? fileName,
-      int? fileSize}) {
+      int? fileSize}) async {
     if (text.isNotEmpty || imageUrl != null || fileUrl != null) {
       Map<String, dynamic> messageData = {
         'sender': FirebaseAuth.instance.currentUser!.uid,

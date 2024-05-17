@@ -13,8 +13,11 @@ import 'package:uuid/uuid.dart';
 
 
 var uuid = const Uuid();
-String password = uuid.v4();
 String public_key = '';
+//String passsUUID = uuid.v4();
+
+
+const password = '123456789';
 const pkcs12 =
 '''MIIQSQIBAzCCEA8GCSqGSIb3DQEHAaCCEAAEgg/8MIIP+DCCBi8GCSqGSIb3DQEH
 BqCCBiAwggYcAgEAMIIGFQYJKoZIhvcNAQcBMBwGCiqGSIb3DQEMAQYwDgQI/pTm
@@ -104,6 +107,8 @@ d4k6nehNbjrrhTDkeV4i7kRFjDQRQn8dX1XrVng3c1w4tJI46J82E1re1dCw9eU5
 SqLMMSUwIwYJKoZIhvcNAQkVMRYEFMlOPeNFP3dsXCHkZzNfcbC+SIwiMDEwITAJ
 BgUrDgMCGgUABBQ9GTbjyC/z9oi+bg8R3kdod+2+XQQINXgTTMTGIPkCAggA''';
 
+
+
 class signup extends StatefulWidget {
   const signup({super.key});
 
@@ -112,6 +117,7 @@ class signup extends StatefulWidget {
 }
 
 class _signupState extends State<signup> {
+  final storage = const FlutterSecureStorage();
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   TextEditingController _cPasswordController = TextEditingController();
@@ -128,6 +134,7 @@ class _signupState extends State<signup> {
 
   void setStorage() async {
 
+    print("masuk sini");
     // await storage.deleteAll();
 
     String? value = await storage.read(key: "private_key");
@@ -137,10 +144,20 @@ class _signupState extends State<signup> {
     print("==== end storage =====");
 
     if( value == null){
+      print("step 1");
       var data = await RSA.convertPKCS12ToKeyPair(pkcs12, password);
+      print("step 2");
 
       await storage.write(key: "private_key", value: data.privateKey);
       public_key = data.publicKey;
+
+
+      print("==== PRIVATE KEY =====");
+      print(data.privateKey);
+
+      print("==== PUBLIC KEY =====");
+      print(data.publicKey);
+
     }
   }
 
@@ -174,6 +191,7 @@ class _signupState extends State<signup> {
         ),
       );
     } else {
+      print("sebelum signup");
       signup(email, password);
     }
   }
@@ -188,8 +206,8 @@ class _signupState extends State<signup> {
       );
 
       if (credential != null) {
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => veritifikasi()));
+        // Navigator.of(context).pushReplacement(
+        //     MaterialPageRoute(builder: (context) => veritifikasi()));
 
         final user = FirebaseAuth.instance.currentUser;
         if (user != null) {
