@@ -62,6 +62,7 @@ class _Home_PageState extends State<Home_Page> {
       if (event.snapshot.value != null) {
         Map<dynamic, dynamic>? rooms =
             event.snapshot.value as Map<dynamic, dynamic>?;
+
         rooms?.forEach((key, value) {
           List<String> users = key.split('_');
           if (users.contains(currentUserUid)) {
@@ -233,6 +234,8 @@ class _Home_PageState extends State<Home_Page> {
           ListView.builder(
             itemCount: _otherUserNames.length, // 4
             itemBuilder: (context, index) {
+
+
               String roomKey;
 
               if (_otherUserIds[index].compareTo(_currentUser.uid) < 0) {

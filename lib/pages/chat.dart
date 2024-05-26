@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+
 import 'package:fast_rsa/fast_rsa.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -31,8 +32,13 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+
   final DatabaseReference referenceDatabase =
-      FirebaseDatabase.instance.reference().child('rooms');
+      FirebaseDatabase.instance.ref().child('rooms');
+
+  // KONSTAN UNTUK SECURE STORAGE
+  final storage = const FlutterSecureStorage();
+
   void initState() {
     super.initState();
     _initializeDownloader();
@@ -64,8 +70,37 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+
+  // DEKRIPSI PESAN
+  Future<String> DekripsiPesan( String data_enkripsi ) async {
+
+    // 1. ambil private key dari secure storage
+    String? priv_key = await storage.read(key: "private_key");
+
+    // 2. dekripsi pakai private key
+    var decrypted = await RSA.decryptPKCS1v15( data_enkripsi, priv_key! );
+
+    return decrypted;
+  }
+
+
+  // DekripsiPesan( String d )  {
+  //
+  //   // 1. ambil private key dari secure storage
+  //   // String? value = await storage.read(key: "private_key");
+  //   // print("============ isi private key ===============");
+  //   // print(value);
+  //   // print("============ end isi private key ===============");
+  //
+  //   // 2. dekripsi pakai private key
+  //
+  //   return "test 123";
+  // }
+
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
@@ -126,10 +161,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
                   messages
                       .sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
+
+                  print("===> efek future");
+
+
                   return ListView.builder(
                     reverse: true,
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
+
+                      // proses cek apakah status download true ????
+
+
                       var message = messages[index];
                       bool isSentByCurrentUser = (message['sender'] ==
                           FirebaseAuth.instance.currentUser!.uid);
@@ -139,7 +182,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             ? CrossAxisAlignment.end
                             : CrossAxisAlignment.start,
                         children: [
+
                           if (message['text'] != null)
+                            //showDialog(context: context, builder: builder),
+
                             Container(
                               margin: EdgeInsets.symmetric(
                                   vertical: 5, horizontal: 10),
@@ -153,11 +199,41 @@ class _ChatScreenState extends State<ChatScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    message['text'],
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 12),
+
+                                  // Text(
+                                  //
+                                  //   DekripsiPesan( message['text'] ) as String, // dekripsi dulu disini
+                                  //
+                                  //   style: TextStyle(
+                                  //       color: Colors.white, fontSize: 12),
+                                  // ),
+
+                                  // PERBAIKI CARA KERJA FUTURE BUILDER
+                                  //  - coba pelajari proses submit button kirim pesanny
+
+                                  FutureBuilder<String>(
+
+                                    future: DekripsiPesan( message['text'] ),
+
+                                    builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+
+                                      if (snapshot.connectionState == ConnectionState.waiting) {
+
+                                        return const CircularProgressIndicator();
+
+                                      } else if (snapshot.hasError) {
+                                        return Text('Error: ${snapshot.error}');
+                                      } else {
+                                        return Text(snapshot.data ?? 'No data');
+                                      }
+
+                                      // return const Text('');
+                                    },
                                   ),
+                                  // ================================
+
+
+
                                   SizedBox(height: 5),
                                   Text(
                                     _formatTimestamp(message['timestamp']),
@@ -623,19 +699,41 @@ class _ChatScreenState extends State<ChatScreen> {
       if (text.isNotEmpty) {
         // ENCRYPT WITH public_key TARGET USER
 
+        print("===== current UID ========");
+        print(widget.targetUserID);
+        print("============================");
+
         String? public_key;
-        await referenceDatabase.child('users').child(widget.targetUserID).child("public_key").once().then((DatabaseEvent event) {
+
+        final DatabaseReference refToUsers = FirebaseDatabase.instance.ref().child('users');
+
+        await refToUsers.child(widget.targetUserID).once().then((DatabaseEvent event) {
+
+          print(event.snapshot.value);
+
+          if (event.snapshot.value != null) {
+            Map<dynamic, dynamic>? pubkey = event.snapshot.value as Map<dynamic, dynamic>?;
+
+
+            pubkey?.forEach((key, value) {
+              if(key == "public_key"){
+                print("=====tampildata pubkey=====");
+                public_key = value;
+                print(value);
+              }
+            });
+
+          }
 
           // cek lagi disini
-          public_key = event.snapshot.value as String?;
-
-          print("=========== > pub key user target: ");
-          print(public_key);
+          // public_key = event.snapshot.value as String?;
+          //
+          // print("=========== > pub key user target: ");
+          // print(public_key);
 
         });
 
         String encrypted = await RSA.encryptPKCS1v15( text, public_key!);
-
         messageData['text'] = encrypted;
       }
 
